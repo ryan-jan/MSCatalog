@@ -3,9 +3,9 @@
 MSCatalog is a PowerShell module for searching and downloading updates from https://www.catalog.update.microsoft.com.
 It is cross-platform and runs on both Desktop and Core versions of PowerShell.
 
-[![appveyor](https://ci.appveyor.com/api/projects/status/es35kl0uq8ldaty6?svg=true)](https://ci.appveyor.com/project/ryan-jan/mscatalog)
-[![psgallery](https://img.shields.io/powershellgallery/v/mscatalog.svg)](https://www.powershellgallery.com/packages/MSCatalog)
-[![codecov](https://codecov.io/gh/ryan-jan/MSCatalog/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-jan/MSCatalog)
+[![appveyor](https://img.shields.io/appveyor/ci/ryan-jan/mscatalog?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/ryan-jan/mscatalog)
+[![psgallery](https://img.shields.io/powershellgallery/v/mscatalog?style=flat-square&logo=powershell)](https://www.powershellgallery.com/packages/MSCatalog)
+[![codecov](https://img.shields.io/codecov/c/gh/ryan-jan/mscatalog?logo=codecov&style=flat-square)](https://codecov.io/gh/ryan-jan/MSCatalog)
 
 ## Getting Started
 

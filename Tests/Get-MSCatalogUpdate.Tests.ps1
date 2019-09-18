@@ -1,8 +1,11 @@
 InModuleScope MSCatalog {
     Describe "Get-MSCatalogUpdate" {
-        $TestData = Import-Clixml "$PSScriptRoot\Assets\Get-MSCatalogUpdate.xml"
-        Mock Invoke-WebRequest {return $TestData[0]} -ParameterFilter {$Method -eq "Get"}
-        Mock Invoke-WebRequest {return $TestData[1]} -ParameterFilter {$Method -eq "Post"}
+        # A sample Search response with more pages available in the pagination.
+        $RawResMore = Import-Clixml "$PSScriptRoot\Assets\Get-MSCatalogUpdate\RawResponseMorePages.xml"
+        # A sample Search response conatining the last page available in the pagination.
+        $RawResLast = Import-Clixml "$PSScriptRoot\Assets\Get-MSCatalogUpdate\RawResponseLastPage.xml"
+        Mock Invoke-WebRequest {return $RawResMore} -ParameterFilter {$Method -eq "Get"}
+        Mock Invoke-WebRequest {return $RawResLast} -ParameterFilter {$Method -eq "Post"}
 
         $ParamCases = @(
             @{
