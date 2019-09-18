@@ -1,0 +1,26 @@
+image:
+  - Visual Studio 2019
+  - Ubuntu1804
+environment:
+  PSGALLERY_KEY:
+    secure: jHlZVjMlgZd0pSa/fSKf8GP4iUGUaJdC9aZaUehiV50cVq4p2/824mQUND5oSDHT
+  CODECOV_TOKEN: 4efac4ec-9cda-4519-8d34-9a491699c02c
+build: off
+matrix:
+  fast_finish: true
+install:
+  - ps: Install-Module -Name Pester -Scope CurrentUser -Force -Confirm:$false
+  - ps: Install-Module -Name PSCodeCovIO -Scope CurrentUser -Force -Confirm:$false
+for:
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2019
+    test_script:
+      - ps: .\Utils\Build.ps1 -Test
+  -
+    matrix:
+      only:
+        - image: Ubuntu1804
+    test_script:
+      - ps: .\Utils\Build.ps1 -Test -CodeCov -Deploy
