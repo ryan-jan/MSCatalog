@@ -1,28 +1,4 @@
 function Get-MSCatalogUpdate {
-    <#
-        .SYNOPSIS
-        Query catalog.update.micrsosoft.com for available updates.
-
-        .DESCRIPTION
-        Given that there is currently no public API available for the catalog.update.micrsosoft.com site, this
-        command makes HTTP requests to the site and parses the returned HTML for the required data.
-
-        .PARAMETER Search
-        Specify a string to search for.
-
-        .PARAMETER AllPages
-        By default this command returns the first page of results from catalog.update.micrsosoft.com, which is
-        the latest 25 updates matching the search term. If you specify this switch the command will instead
-        return all pages of results. This can result in a significant increase in the number of HTTP requests 
-        to the catalog.update.micrsosoft.com endpoint.
-
-        .EXAMPLE
-        Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903"
-
-        .EXAMPLE
-        Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -AllPages
-    #>
-    
     [CmdLetBinding()]
     param (
         [Parameter(

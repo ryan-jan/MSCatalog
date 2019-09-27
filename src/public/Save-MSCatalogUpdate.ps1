@@ -1,36 +1,4 @@
-function Save-MSCatalogUpdate {
-    <#
-        .SYNOPSIS
-        Download an update file from catalog.update.micrsosoft.com.
-
-        .PARAMETER Update
-        Specify the update to be downloaded.
-        The update object is retrieved using the Get-MSCatalogUpdate function.
-
-        .PARAMETER Guid
-        Specify the Guid for the update to be downloaded.
-        The Guid is retrieved using the Get-MSCatalogUpdate function.
-
-        .PARAMETER Destination
-        Specify the destination directory to download the update to.
-
-        .PARAMETER Language
-        Some updates are available in multiple languages. By default this function will list all available
-        files for a specific update and prompt you to select the one to download. If you wish to remove
-        this prompt you can specify a language-country code combination e.g. "en-us".
-
-        .EXAMPLE
-        $Update = Get-MSCatalogUpdate -Search "KB4515384"
-        Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\
-
-        .EXAMPLE
-        Save-MSCatalogUpdate -Guid "5570183b-a0b7-4478-b0af-47a6e65417ca" -Destination C:\Windows\Temp\
-
-        .EXAMPLE
-        $Update = Get-MSCatalogUpdate -Search "KB4515384"
-        Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\ -Language "en-us"
-    #>
-    
+function Save-MSCatalogUpdate {    
     param (
         [Parameter(
             Mandatory = $true,
