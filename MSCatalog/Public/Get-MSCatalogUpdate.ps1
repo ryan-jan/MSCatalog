@@ -10,6 +10,9 @@ function Get-MSCatalogUpdate {
         .PARAMETER Search
         Specify a string to search for.
 
+        .PARAMETER Strict
+        Force a Search paramater with multiple words to be treated as a single string. 
+
         .PARAMETER AllPages
         By default this command returns the first page of results from catalog.update.micrsosoft.com, which is
         the latest 25 updates matching the search term. If you specify this switch the command will instead
@@ -34,6 +37,12 @@ function Get-MSCatalogUpdate {
         [Parameter(
             Mandatory = $false,
             Position = 1
+        )]
+        [Switch] $Strict,
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 2
         )]
         [Switch] $AllPages,
 
@@ -87,22 +96,39 @@ function Get-MSCatalogUpdate {
 
     $Output = foreach ($Row in $Rows[1..($Rows.Count - 1)]) {
         $Cells = $Row.SelectNodes("td")
-        [PSCustomObject] @{
-            PSTypeName = "MSCatalogUpdate"
-            Title = $Cells[1].innerText.Trim()
-            Products = $Cells[2].innerText.Trim()
-            Classification = $Cells[3].innerText.Trim()
-            LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
-            Version = $Cells[5].innerText.Trim()
-            Size = $Cells[6].SelectNodes("span")[0].InnerText
-            SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
-            Guid = $Cells[7].SelectNodes("input")[0].Id
+        $Title = $Cells[1].innerText.Trim()
+        if ($Strict) {
+            if ($Title -like "*$Search*") {
+                [PSCustomObject] @{
+                    PSTypeName = "MSCatalogUpdate"
+                    Title = $Title
+                    Products = $Cells[2].innerText.Trim()
+                    Classification = $Cells[3].innerText.Trim()
+                    LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
+                    Version = $Cells[5].innerText.Trim()
+                    Size = $Cells[6].SelectNodes("span")[0].InnerText
+                    SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
+                    Guid = $Cells[7].SelectNodes("input")[0].Id
+                }
+            }
+        } else {
+            [PSCustomObject] @{
+                PSTypeName = "MSCatalogUpdate"
+                Title = $Title
+                Products = $Cells[2].innerText.Trim()
+                Classification = $Cells[3].innerText.Trim()
+                LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
+                Version = $Cells[5].innerText.Trim()
+                Size = $Cells[6].SelectNodes("span")[0].InnerText
+                SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
+                Guid = $Cells[7].SelectNodes("input")[0].Id
+            }
         }
     }
     $Output | Sort-Object -Property LastUpdated -Descending
 
     # If $NextPage is $null then there are more pages to collect.
-    if (!$NextPage) {
+    if ($null -eq $NextPage) {
         if ($AllPages) {
             $NextParams = @{
                 Search = $Search
