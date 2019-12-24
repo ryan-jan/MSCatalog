@@ -72,6 +72,8 @@ function Save-MSCatalogUpdate {
         [String] $Language
     )
 
+    $WebClient = [System.Net.WebClient]::new()
+
     if ($Update) {
         $Guid = $Update.Guid
     }
@@ -79,18 +81,12 @@ function Save-MSCatalogUpdate {
     $Links = Get-UpdateLinks -Guid $Guid
     if ($Links.Matches.Count -eq 1) {
         $Link = $Links.Matches[0]
-        $Params = @{
-            Uri = $Link.Value
-            OutFile = (Join-Path -Path $Destination -ChildPath $Link.Value.Split('/')[-1])
-        }
-        Invoke-WebRequest @Params
+        $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
+        $WebClient.DownloadFile($Link.Value, $OutFile)
     } elseif ($Language) {
         $Link = $Links.Matches.Where({$_.Value -match $Language})[0]
-        $Params = @{
-            Uri = $Link.Value
-            OutFile = (Join-Path -Path $Destination -ChildPath $Link.Value.Split('/')[-1])
-        }
-        Invoke-WebRequest @Params
+        $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
+        $WebClient.DownloadFile($Link.Value, $OutFile)
     } else {
         Write-Host "Id  FileName`r"
         Write-Host "--  --------"
@@ -104,10 +100,8 @@ function Save-MSCatalogUpdate {
             }
         }
         $Selected = Read-Host "Multiple files exist for this update. Enter the Id of the file to download"
-        $Params = @{
-            Uri = $Links.Matches[$Selected].Value
-            OutFile = (Join-Path -Path $Destination -ChildPath $FileName)
-        }
-        Invoke-WebRequest @Params
+        $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $FileName
+        $WebClient.DownloadFile($Links.Matches[$Selected].Value, $OutFile)
     }
+    $WebClient.Dispose()
 }
