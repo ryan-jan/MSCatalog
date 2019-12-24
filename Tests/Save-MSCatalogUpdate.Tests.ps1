@@ -8,8 +8,8 @@ InModuleScope MSCatalog {
         $UpdateSingle = Import-Clixml "$PSScriptRoot\Assets\Save-MSCatalogUpdate\UpdateObjectSingle.xml"
         Mock Write-Host {return $true}
         Mock Read-Host {return $true}
-        Mock Invoke-WebRequest {return $RawResMulti} -ParameterFilter {$Method -eq "Post"}
-        Mock Invoke-WebRequest {return $true} -ParameterFilter {$Uri -and $OutFile}
+        Mock Invoke-WebRequest {return $RawResMulti}
+        Mock Invoke-DownloadFile {return $true}
 
         $ParamCases = @(
             @{
@@ -52,7 +52,7 @@ InModuleScope MSCatalog {
             $Test.Count | Should -HaveCount 1
         }
         It "Should not throw an error when called using the Update parameter to download a single file." {
-            Mock Invoke-WebRequest {return $RawResSingle} -ParameterFilter {$Method -eq "Post"}
+            Mock Invoke-WebRequest {return $RawResSingle}
             $Test = Save-MSCatalogUpdate -Update $UpdateSingle -Destination ".\"
             $Test.Count | Should -HaveCount 1
         }
