@@ -11,7 +11,12 @@ function Get-MSCatalogUpdate {
         Specify a string to search for.
 
         .PARAMETER Strict
-        Force a Search paramater with multiple words to be treated as a single string. 
+        Force a Search paramater with multiple words to be treated as a single string.
+
+        .PARAMETER IncludeFileNames
+        Include the filenames for the files as they would be downloaded from catalog.update.micrsosoft.com.
+        This option will cause an extra web request for each update included in the results. It is best to only
+        use this option with a very narrow search term.
 
         .PARAMETER AllPages
         By default this command returns the first page of results from catalog.update.micrsosoft.com, which is
@@ -21,6 +26,12 @@ function Get-MSCatalogUpdate {
 
         .EXAMPLE
         Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903"
+
+        .EXAMPLE
+        Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -Strict
+
+        .EXAMPLE
+        Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -IncludeFileNames
 
         .EXAMPLE
         Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -AllPages
@@ -43,6 +54,12 @@ function Get-MSCatalogUpdate {
         [Parameter(
             Mandatory = $false,
             Position = 2
+        )]
+        [Switch] $IncludeFileNames,
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 3
         )]
         [Switch] $AllPages,
 
@@ -96,35 +113,34 @@ function Get-MSCatalogUpdate {
         $Table = $HtmlDoc.GetElementbyId("ctl00_catalogBody_updateMatches")
         $Rows = $Table.SelectNodes("tr")
 
-        $Output = foreach ($Row in $Rows[1..($Rows.Count - 1)]) {
+        if ($Strict) {
+            $Rows = $Rows.Where({
+                $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
+            })
+        } else {
+            # Remove header row from results.
+            $Rows = $Rows[1..($Rows.Count - 1)]
+        }
+
+        $Output = foreach ($Row in $Rows) {
             $Cells = $Row.SelectNodes("td")
-            $Title = $Cells[1].innerText.Trim()
-            if ($Strict) {
-                if ($Title -like "*$Search*") {
-                    [PSCustomObject] @{
-                        PSTypeName = "MSCatalogUpdate"
-                        Title = $Title
-                        Products = $Cells[2].innerText.Trim()
-                        Classification = $Cells[3].innerText.Trim()
-                        LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
-                        Version = $Cells[5].innerText.Trim()
-                        Size = $Cells[6].SelectNodes("span")[0].InnerText
-                        SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
-                        Guid = $Cells[7].SelectNodes("input")[0].Id
-                    }
+            if ($IncludeFileNames) {
+                $Links = Get-UpdateLinks -Guid $Cells[7].SelectNodes("input")[0].Id
+                [string[]] $FileNames = foreach ($Link in $Links.Matches) {
+                    $Link.Value.Split('/')[-1]
                 }
-            } else {
-                [PSCustomObject] @{
-                    PSTypeName = "MSCatalogUpdate"
-                    Title = $Title
-                    Products = $Cells[2].innerText.Trim()
-                    Classification = $Cells[3].innerText.Trim()
-                    LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
-                    Version = $Cells[5].innerText.Trim()
-                    Size = $Cells[6].SelectNodes("span")[0].InnerText
-                    SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
-                    Guid = $Cells[7].SelectNodes("input")[0].Id
-                }
+            }
+            [PSCustomObject] @{
+                PSTypeName = "MSCatalogUpdate"
+                Title = $Cells[1].innerText.Trim()
+                Products = $Cells[2].innerText.Trim()
+                Classification = $Cells[3].innerText.Trim()
+                LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
+                Version = $Cells[5].innerText.Trim()
+                Size = $Cells[6].SelectNodes("span")[0].InnerText
+                SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
+                Guid = $Cells[7].SelectNodes("input")[0].Id
+                FileNames = $FileNames
             }
         }
         $Output | Sort-Object -Property LastUpdated -Descending
