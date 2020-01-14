@@ -19,6 +19,9 @@ function Save-MSCatalogUpdate {
         files for a specific update and prompt you to select the one to download. If you wish to remove
         this prompt you can specify a language-country code combination e.g. "en-us".
 
+        .PARAMETER UseBits
+        If using a Windows system you can use this parameter to download the update using BITS.
+
         .EXAMPLE
         $Update = Get-MSCatalogUpdate -Search "KB4515384"
         Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\
@@ -29,6 +32,10 @@ function Save-MSCatalogUpdate {
         .EXAMPLE
         $Update = Get-MSCatalogUpdate -Search "KB4515384"
         Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\ -Language "en-us"
+
+        .EXAMPLE
+        $Update = Get-MSCatalogUpdate -Search "KB4515384"
+        Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\ -UseBits
     #>
     
     param (
@@ -69,7 +76,19 @@ function Save-MSCatalogUpdate {
             Position = 2,
             ParameterSetName = "ByGuid"
         )]
-        [String] $Language
+        [String] $Language,
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 3,
+            ParameterSetName = "ByObject"
+        )]
+        [Parameter(
+            Mandatory = $false,
+            Position = 3,
+            ParameterSetName = "ByGuid"
+        )]
+        [Switch] $UseBits
     )
 
     if ($Update) {
@@ -80,11 +99,19 @@ function Save-MSCatalogUpdate {
     if ($Links.Matches.Count -eq 1) {
         $Link = $Links.Matches[0]
         $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
-        Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+        if ($UseBits) {
+            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
+        } else {
+            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+        }
     } elseif ($Language) {
         $Link = $Links.Matches.Where({$_.Value -match $Language})[0]
         $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
-        Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+        if ($UseBits) {
+            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
+        } else {
+            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+        }
     } else {
         Write-Host "Id  FileName`r"
         Write-Host "--  --------"
@@ -100,6 +127,10 @@ function Save-MSCatalogUpdate {
         $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download"
         $Selected = $Links.Matches[$SelectedId].Value
         $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Selected.Split('/')[-1]
-        Invoke-DownloadFile -Uri $Selected -Path $OutFile
+        if ($UseBits) {
+            Invoke-DownloadFile -Uri $Selected -Path $OutFile -UseBits
+        } else {
+            Invoke-DownloadFile -Uri $Selected -Path $OutFile
+        }
     }
 }
