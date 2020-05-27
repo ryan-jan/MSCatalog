@@ -20,6 +20,7 @@ function Get-UpdateLinks {
     }
     $DownloadDialog = Invoke-WebRequest @Params
     $Links = $DownloadDialog.Content.Replace("www.download.windowsupdate", "download.windowsupdate")
-    $Links = $Links | Select-String -AllMatches -Pattern "(http[s]?\://download\.windowsupdate\.com\/[^\'\""]*)"
+    $Regex = "(http[s]?\://dl\.delivery\.mp\.microsoft\.com\/[^\'\""]*)|(http[s]?\://download\.windowsupdate\.com\/[^\'\""]*)"
+    $Links = $Links | Select-String -AllMatches -Pattern $Regex
     $Links
 }
