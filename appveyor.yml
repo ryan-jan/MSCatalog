@@ -9,7 +9,7 @@ build: off
 matrix:
   fast_finish: true
 install:
-  - ps: Install-Module -Name Pester -Scope CurrentUser -Force -Confirm:$false
+  - ps: Install-Module -Name Pester -MaximumVersion "4.10.1" -Scope CurrentUser -Force -Confirm:$false
   - ps: Install-Module -Name PSCodeCovIO -Scope CurrentUser -Force -Confirm:$false
 for:
   -
