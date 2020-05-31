@@ -15,6 +15,14 @@ MSCatalog can be installed from the PowerShell Gallery in the usual way.
 Install-Module -Name MSCatalog -Scope CurrentUser
 ```
 
+It is currently tested against the following images/PowerShell versions via AppVeyor, although support for Windows PowerShell 5.1 may be dropped in the future.
+
+| Operating System | PowerShell |
+| ---------------- | ---------- |
+| Windows Server 2019 | Windows PowerShell 5.1 |
+| Windows Server 2019 | PowerShell Core 7.0.1 |
+| Ubuntu 18.04.4 LTS | PowerShell Core 7.0.1 |
+
 ## Get-MSCatalogUpdate
 
 This command is used to retrieve updates from the [https://www.catalog.update.microsoft.com](https://www.catalog.update.microsoft.com)

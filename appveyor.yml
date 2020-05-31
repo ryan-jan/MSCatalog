@@ -18,9 +18,10 @@ for:
         - image: Visual Studio 2019
     test_script:
       - ps: .\Utils\Build.ps1 -Test
+      - pwsh: .\Utils\Build.ps1 -Test
   -
     matrix:
       only:
         - image: Ubuntu1804
     test_script:
-      - ps: .\Utils\Build.ps1 -Test -CodeCov -Deploy
+      - pwsh: .\Utils\Build.ps1 -Test -CodeCov -Deploy
