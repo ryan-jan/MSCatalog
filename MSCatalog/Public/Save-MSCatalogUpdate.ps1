@@ -42,7 +42,6 @@ function Save-MSCatalogUpdate {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            ValueFromPipeline = $true,
             ParameterSetName = "ByObject"
         )]
         [Object] $Update,
@@ -50,6 +49,7 @@ function Save-MSCatalogUpdate {
         [Parameter(
             Mandatory = $true,
             Position = 0,
+            ValueFromPipelineByPropertyName = "Guid",
             ParameterSetName = "ByGuid"
         )]
         [String] $Guid,
@@ -124,13 +124,23 @@ function Save-MSCatalogUpdate {
                 Write-Host "$Id  $FileName`r"
             }
         }
-        $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download"
-        $Selected = $Links.Matches[$SelectedId].Value
-        $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Selected.Split('/')[-1]
-        if ($UseBits) {
-            Invoke-DownloadFile -Uri $Selected -Path $OutFile -UseBits
+        $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download or 'A' to download all files."
+        $ToDownload = @()
+        if ($SelectedId -like "A") {
+            foreach ($Link in $Links.Matches) {
+                $ToDownload += $Link.Value
+            }
         } else {
-            Invoke-DownloadFile -Uri $Selected -Path $OutFile
+            $ToDownload += $Links.Matches[$SelectedId].Value
+        }
+
+        foreach ($Item in $ToDownload) {
+            $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Item.Split('/')[-1]
+            if ($UseBits) {
+                Invoke-DownloadFile -Uri $Item -Path $OutFile -UseBits
+            } else {
+                Invoke-DownloadFile -Uri $Item -Path $OutFile
+            }
         }
     }
 }
