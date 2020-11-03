@@ -10,6 +10,12 @@ function Get-MSCatalogUpdate {
         .PARAMETER Search
         Specify a string to search for.
 
+        .PARAMETER SortBy
+        Specify a field to sort the results by. The default sort is by LastUpdated and in descending order.
+
+        .PARAMETER Descending
+        Switch the sort order to descending.
+
         .PARAMETER Strict
         Force a Search paramater with multiple words to be treated as a single string.
 
@@ -19,13 +25,15 @@ function Get-MSCatalogUpdate {
         use this option with a very narrow search term.
 
         .PARAMETER AllPages
-        By default this command returns the first page of results from catalog.update.micrsosoft.com, which is
-        the latest 25 updates matching the search term. If you specify this switch the command will instead
-        return all pages of results. This can result in a significant increase in the number of HTTP requests 
-        to the catalog.update.micrsosoft.com endpoint.
+        By default the Get-MSCatalogUpdate command returns the first page of results from catalog.update.micrsosoft.com, which is
+        limited to 25 updates. If you specify this switch the command will instead return all pages of search results.
+        This can result in a significant increase in the number of HTTP requests to the catalog.update.micrsosoft.com endpoint.
 
         .EXAMPLE
         Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903"
+
+        .EXAMPLE
+        Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -SortBy "Title" -Descending
 
         .EXAMPLE
         Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -Strict
@@ -39,134 +47,115 @@ function Get-MSCatalogUpdate {
     
     [CmdLetBinding()]
     param (
-        [Parameter(
-            Mandatory = $true,
-            Position = 0
-        )]
-        [String] $Search,
+        [Parameter(Mandatory = $true)]
+        [string] $Search,
 
-        [Parameter(
-            Mandatory = $false,
-            Position = 1
-        )]
-        [Switch] $Strict,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Title", "Products", "Classification", "LastUpdated", "Size")]
+        [string] $SortBy,
 
-        [Parameter(
-            Mandatory = $false,
-            Position = 2
-        )]
-        [Switch] $IncludeFileNames,
+        [Parameter(Mandatory = $false)]
+        [switch] $Descending,
 
-        [Parameter(
-            Mandatory = $false,
-            Position = 3
-        )]
-        [Switch] $AllPages,
+        [Parameter(Mandatory = $false)]
+        [switch] $Strict,
 
-        [Parameter(DontShow)]
-        [String] $Method = "Get",
+        [Parameter(Mandatory = $false)]
+        [switch] $IncludeFileNames,
 
-        [Parameter(DontShow)]
-        [String] $EventArgument,
-
-        [Parameter(DontShow)]
-        [String] $EventTarget,
-
-        [Parameter(DontShow)]
-        [String] $EventValidation,
-
-        [Parameter(DontShow)]
-        [String] $ViewState,
-
-        [Parameter(DontShow)]
-        [String] $ViewStateGenerator
+        [Parameter(Mandatory = $false)]
+        [switch] $AllPages
     )
 
     try {
+        $ProgPref = $ProgressPreference
+        $ProgressPreference = "SilentlyContinue"
 
-        if ($Method -eq "Post") {
-            $ReqBody = @{
-                "__EVENTARGUMENT" = $EventArgument
-                "__EVENTTARGET" = $EventTarget
-                "__EVENTVALIDATION" = $EventValidation
-                "__VIEWSTATE" = $ViewState
-                "__VIEWSTATEGENERATOR" = $ViewStateGenerator
+        $Uri = "https://www.catalog.update.microsoft.com/Search.aspx?q=$Search"
+        $Res = Invoke-CatalogRequest -Uri $Uri
+
+        if ($PSBoundParameters.ContainsKey("SortBy")) {
+            $SortParams = @{
+                Uri = $Uri
+                SortBy = $SortBy
+                Descending = $Descending
+                EventArgument = $Res.EventArgument
+                EventValidation = $Res.EventValidation
+                ViewState = $Res.ViewState
+                ViewStateGenerator = $Res.ViewStateGenerator
             }
+            $Res = Sort-CatalogResults @SortParams
+        } else {
+            # Default sort is by LastUpdated and in descending order.
+            $SortParams = @{
+                Uri = $Uri
+                SortBy = "LastUpdated"
+                Descending = $true
+                EventArgument = $Res.EventArgument
+                EventValidation = $Res.EventValidation
+                ViewState = $Res.ViewState
+                ViewStateGenerator = $Res.ViewStateGenerator
+            }
+            $Res = Sort-CatalogResults @SortParams
         }
-        $UriSearch = [Uri]::EscapeUriString($Search)
-        $Params = @{
-            Uri = "https://www.catalog.update.microsoft.com/Search.aspx?q=$UriSearch"
-            Method = $Method
-            Body = $ReqBody
-            ContentType = "application/x-www-form-urlencoded"
-            UseBasicParsing = $true
-        }
-        $Results = Invoke-WebRequest @Params
 
-        $HtmlDoc = [HtmlAgilityPack.HtmlDocument]::new()
-        $HtmlDoc.LoadHtml($Results.RawContent.ToString())
-        $NextPage = $HtmlDoc.GetElementbyId("ctl00_catalogBody_nextPage")
-        $EventArgument = $HtmlDoc.GetElementbyId("__EVENTARGUMENT")[0].Attributes["value"].Value
-        $EventValidation = $HtmlDoc.GetElementbyId("__EVENTVALIDATION")[0].Attributes["value"].Value
-        $ViewState = $HtmlDoc.GetElementbyId("__VIEWSTATE")[0].Attributes["value"].Value
-        $ViewStateGenerator = $HtmlDoc.GetElementbyId("__VIEWSTATEGENERATOR")[0].Attributes["value"].Value
-        $Table = $HtmlDoc.GetElementbyId("ctl00_catalogBody_updateMatches")
-        $Rows = $Table.SelectNodes("tr")
+        $Rows = $Res.Rows
 
-        if ($Strict) {
-            $Rows = $Rows.Where({
+        if ($Strict -and -not $AllPages) {
+            $StrictRows = $Rows.Where({
                 $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
             })
-        } else {
-            # Remove header row from results.
-            $Rows = $Rows[1..($Rows.Count - 1)]
-        }
-
-        $Output = foreach ($Row in $Rows) {
-            $Cells = $Row.SelectNodes("td")
-            if ($IncludeFileNames) {
-                $Links = Get-UpdateLinks -Guid $Cells[7].SelectNodes("input")[0].Id
-                [string[]] $FileNames = foreach ($Link in $Links.Matches) {
-                    $Link.Value.Split('/')[-1]
-                }
-            }
-            [PSCustomObject] @{
-                PSTypeName = "MSCatalogUpdate"
-                Title = $Cells[1].innerText.Trim()
-                Products = $Cells[2].innerText.Trim()
-                Classification = $Cells[3].innerText.Trim()
-                LastUpdated = (Invoke-ParseDate -DateString $Cells[4].innerText.Trim())
-                Version = $Cells[5].innerText.Trim()
-                Size = $Cells[6].SelectNodes("span")[0].InnerText
-                SizeInBytes = [Int] $Cells[6].SelectNodes("span")[1].InnerText 
-                Guid = $Cells[7].SelectNodes("input")[0].Id
-                FileNames = $FileNames
-            }
-        }
-        $Output | Sort-Object -Property LastUpdated -Descending
-
-        # If $NextPage is $null then there are more pages to collect.
-        if ($null -eq $NextPage) {
-            if ($AllPages) {
+            # If $NextPage is $null then there are more pages to collect. It is arse backwards but trust me.
+            while (($StrictRows.Count -lt 25) -and ($Res.NextPage -eq "")) {
                 $NextParams = @{
-                    Search = $Search
-                    AllPages = $true
-                    EventArgument = $EventArgument
+                    Uri = $Uri
+                    EventArgument = $Res.EventArgument
                     EventTarget = 'ctl00$catalogBody$nextPageLinkText'
-                    EventValidation = $EventValidation
-                    ViewState = $ViewState
-                    ViewStateGenerator = $ViewStateGenerator
+                    EventValidation = $Res.EventValidation
+                    ViewState = $Res.ViewState
+                    ViewStateGenerator = $Res.ViewStateGenerator
                     Method = "Post"
                 }
-                Get-MSCatalogUpdate @NextParams
+                $Res = Invoke-CatalogRequest @NextParams
+                $StrictRows += $Rows.Where({
+                    $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
+                })
+            }
+            $Rows = $StrictRows[0..24]
+        } elseif ($AllPages) {
+            # If $NextPage is $null then there are more pages to collect. It is arse backwards but trust me.
+            while ($Res.NextPage -eq "") {
+                $NextParams = @{
+                    Uri = $Uri
+                    EventArgument = $Res.EventArgument
+                    EventTarget = 'ctl00$catalogBody$nextPageLinkText'
+                    EventValidation = $Res.EventValidation
+                    ViewState = $Res.ViewState
+                    ViewStateGenerator = $Res.ViewStateGenerator
+                    Method = "Post"
+                }
+                $Res = Invoke-CatalogRequest @NextParams
+                $Rows += $Res.Rows
+            }
+            if ($Strict) {
+                $Rows = $Rows.Where({
+                    $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
+                })
             }
         }
-    } catch {
-        $NoResults = $HtmlDoc.GetElementbyId("ctl00_catalogBody_noResultText")
-        if (-not ($null -eq $NoResults)) {
-            Write-Warning "$($NoResults.InnerText)'$Search'"
+        
+        if ($Rows.Count -gt 0) {
+            foreach ($Row in $Rows) {
+                if ($Row.Id -ne "headerRow") {
+                    [MSCatalogUpdate]::new($Row, $IncludeFileNames)
+                }
+            }
         } else {
-            throw $_
+            Write-Warning "No updates found matching the search term."
         }
+        $ProgressPreference = $ProgPref
+    } catch {
+        $ProgressPreference = $ProgPref
+        throw $_
     }
 }
