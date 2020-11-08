@@ -1,18 +1,4 @@
-# Get public function definition files and dot source them
-$Public = @(Get-ChildItem -Path $PSScriptRoot\Public\*.ps1)
-$Private = @(Get-ChildItem -Path $PSScriptRoot\Private\*.ps1)
 
-foreach ($Module in ($Public + $Private)) {
-    try {
-        . $Module.FullName
-    } catch {
-        Write-Error -Message "Failed to import function $($Module.FullName): $_"
-    }
-}
-
-Export-ModuleMember -Function $Public.BaseName
-
-# Add HtmlAgilityPack type depending on PSVersion
 try {
     if (!([System.Management.Automation.PSTypeName]'HtmlAgilityPack.HtmlDocument').Type) {
         if ($PSVersionTable.PSEdition -eq "Desktop") {
@@ -25,3 +11,17 @@ try {
     $Err = $_
     throw $Err
 }
+
+$Public = @(Get-ChildItem -Path $PSScriptRoot\Public\*.ps1)
+$Private = @(Get-ChildItem -Path $PSScriptRoot\Private\*.ps1)
+$Classes = @(Get-ChildItem -Path $PSScriptRoot\Classes\*.ps1)
+
+foreach ($Module in ($Public + $Private + $Classes)) {
+    try {
+        . $Module.FullName
+    } catch {
+        Write-Error -Message "Failed to import function $($Module.FullName): $_"
+    }
+}
+
+Export-ModuleMember -Function $Public.BaseName

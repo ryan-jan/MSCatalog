@@ -26,7 +26,7 @@ It is currently tested against the following images/PowerShell versions via AppV
 ## Get-MSCatalogUpdate
 
 This command is used to retrieve updates from the [https://www.catalog.update.microsoft.com](https://www.catalog.update.microsoft.com)
-website. By default it returns the first 25 items from the search.
+website. By default it returns the first 25 items from the search sorted by the LastUpdated field in descending order.
 
 ```powershell
 Get-MSCatalogUpdate -Search "Cumulative Update for Windows Server 2016 (1803)"
@@ -60,7 +60,19 @@ Title                                                                           
 2019-08 Cumulative Update for Windows Server 2016 (1803) for x64-based Systems (KB4512501)          Windows Server 2016 Security Updates 2019/08/09  919.3 MB
 ```
 
-However, if you would like to return all available results you can specify the `AllPages` parameter.
+The `SortBy` and `Descending` parameters allow you to manipulate the search results. For example:
+
+```powershell
+Get-MSCatalogUpdate -Search "Cumulative Update for Windows Server 2016 (1803)" -SortBy "Title" -Descending
+```
+
+The `Strict` parameter will return results which only contain the exact search term. For example:
+
+```powershell
+Get-MSCatalogUpdate -Search "Cumulative Update for Windows Server 2016 (1803)" -Strict
+```
+
+If you would like to return all available results you can specify the `AllPages` parameter.
 
 ```powershell
 Get-MSCatalogUpdate -Search "Cumulative Update for Windows Server 2016 (1803)" -AllPages
