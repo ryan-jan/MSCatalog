@@ -8,7 +8,7 @@
     RootModule = 'MSCatalog.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.20.0'
+    ModuleVersion = '0.21.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()

@@ -3,7 +3,7 @@ image:
   - Ubuntu1804
 environment:
   PSGALLERY_KEY:
-    secure: jHlZVjMlgZd0pSa/fSKf8GP4iUGUaJdC9aZaUehiV50cVq4p2/824mQUND5oSDHT
+    secure: nWRdKNFqKLmwNQsUix0adx10rFQIXouh6y8vc2KjR/ybsTLCDnAspue5rzfDf1zb
   CODECOV_TOKEN: 4efac4ec-9cda-4519-8d34-9a491699c02c
 build: off
 matrix:
