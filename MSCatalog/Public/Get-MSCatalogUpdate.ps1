@@ -117,7 +117,7 @@ function Get-MSCatalogUpdate {
                     Method = "Post"
                 }
                 $Res = Invoke-CatalogRequest @NextParams
-                $StrictRows += $Rows.Where({
+                $StrictRows += $Res.Rows.Where({
                     $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
                 })
             }
