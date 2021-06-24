@@ -48,19 +48,14 @@ function Invoke-CatalogRequest {
         if ($null -eq $NoResults) {
             $ErrorText = $HtmlDoc.GetElementbyId("errorPageDisplayedError")
             if ($ErrorText) {
-                throw "The catalog.microsoft.com site has encountered an error. Please try again later." 
+                throw "The catalog.microsoft.com site has encountered an error. Please try again later."
             } else {
                 [MSCatalogResponse]::new($HtmlDoc)
             }
         } else {
-            throw "No results found."
+            throw "$($NoResults.InnerText)$($Uri.Split("q=")[-1])"
         }
     } catch {
-        if ($_.Exception.Message -eq "No results found.") {
-            Write-Warning "$($NoResults.InnerText)$($Uri.Split("q=")[-1])"
-            break
-        } else {
-            throw $_
-        }
+        throw $_
     }
 }

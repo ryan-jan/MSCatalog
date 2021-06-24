@@ -156,6 +156,10 @@ function Get-MSCatalogUpdate {
         $ProgressPreference = $ProgPref
     } catch {
         $ProgressPreference = $ProgPref
-        throw $_
+        if ($_.Exception.Message -like "We did not find*") {
+            Write-Warning $_.Exception.Message
+        } else {
+            throw $_
+        }
     }
 }
