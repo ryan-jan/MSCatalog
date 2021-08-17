@@ -24,6 +24,8 @@ function Invoke-CatalogRequest {
     )
 
     try {
+        Set-TempSecurityProtocol
+
         if ($Method -eq "Post") {
             $ReqBody = @{
                 "__EVENTARGUMENT" = $EventArgument
@@ -55,6 +57,7 @@ function Invoke-CatalogRequest {
         } else {
             throw "$($NoResults.InnerText)$($Uri.Split("q=")[-1])"
         }
+        Set-TempSecurityProtocol -ResetToDefault
     } catch {
         throw $_
     }

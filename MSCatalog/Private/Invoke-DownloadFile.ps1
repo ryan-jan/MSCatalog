@@ -7,6 +7,8 @@ function Invoke-DownloadFile {
     )
     
     try {
+        Set-TempSecurityProtocol
+
         if ($UseBits) {
             Start-BitsTransfer -Source $Uri -Destination $Path
         } else {
@@ -14,6 +16,7 @@ function Invoke-DownloadFile {
             $WebClient.DownloadFile($Uri, $Path)
             $WebClient.Dispose()
         }
+        Set-TempSecurityProtocol -ResetToDefault
     } catch {
         $Err = $_
         if ($WebClient) {
