@@ -8,6 +8,8 @@ function Get-UpdateLinks {
         [String] $Guid
     )
 
+    Set-TempSecurityProtocol
+
     $Post = @{size = 0; updateID = $Guid; uidInfo = $Guid} | ConvertTo-Json -Compress
     $Body = @{updateIDs = "[$Post]"}
 
@@ -22,5 +24,7 @@ function Get-UpdateLinks {
     $Links = $DownloadDialog.Content.Replace("www.download.windowsupdate", "download.windowsupdate")
     $Regex = "(http[s]?\://dl\.delivery\.mp\.microsoft\.com\/[^\'\""]*)|(http[s]?\://download\.windowsupdate\.com\/[^\'\""]*)"
     $Links = $Links | Select-String -AllMatches -Pattern $Regex
+    Set-TempSecurityProtocol -ResetToDefault
+    
     $Links
 }
