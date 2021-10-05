@@ -8,7 +8,7 @@ function Set-TempSecurityProtocol {
         [Net.ServicePointManager]::SecurityProtocol = $Script:MSCatalogSecProt
     } else {
         [array] $Script:MSCatalogSecProt = [Net.ServicePointManager]::SecurityProtocol -Split ", "
-        $TempSecProt = ($Script:MSCatalogSecProt + "Tls11", "Tls12", "Tls13") | Select-Object -Unique
+        $TempSecProt = ($Script:MSCatalogSecProt + "Tls11", "Tls12") | Select-Object -Unique
         [Net.ServicePointManager]::SecurityProtocol = $TempSecProt
     }
 }
