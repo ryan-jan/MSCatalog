@@ -71,7 +71,7 @@ function Get-MSCatalogUpdate {
         $ProgPref = $ProgressPreference
         $ProgressPreference = "SilentlyContinue"
 
-        $Uri = "https://www.catalog.update.microsoft.com/Search.aspx?q=$Search"
+        $Uri = "https://www.catalog.update.microsoft.com/Search.aspx?q=$([uri]::EscapeDataString($Search))"
         $Res = Invoke-CatalogRequest -Uri $Uri
 
         if ($PSBoundParameters.ContainsKey("SortBy")) {

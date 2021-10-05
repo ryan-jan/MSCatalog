@@ -36,7 +36,7 @@ function Invoke-CatalogRequest {
             }
         }
         $Params = @{
-            Uri = [Uri]::EscapeUriString($Uri)
+            Uri = $Uri
             Method = $Method
             Body = $ReqBody
             ContentType = "application/x-www-form-urlencoded"
