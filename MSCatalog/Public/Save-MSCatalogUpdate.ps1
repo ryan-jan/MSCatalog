@@ -22,6 +22,9 @@ function Save-MSCatalogUpdate {
         .PARAMETER UseBits
         If using a Windows system you can use this parameter to download the update using BITS.
 
+        .PARAMETER AcceptMultiFileUpdates
+        Allow for multiple file update downloads to occur without user interaction
+
         .EXAMPLE
         $Update = Get-MSCatalogUpdate -Search "KB4515384"
         Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\
@@ -88,7 +91,10 @@ function Save-MSCatalogUpdate {
             Position = 3,
             ParameterSetName = "ByGuid"
         )]
-        [Switch] $UseBits
+        [Switch] $UseBits,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $AcceptMultiFileUpdates
     )
 
     if ($Update) {
@@ -124,7 +130,11 @@ function Save-MSCatalogUpdate {
                 Write-Host "$Id  $FileName`r"
             }
         }
-        $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download or 'A' to download all files."
+        if($AcceptMultiFileUpdates -eq $false){
+            $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download or 'A' to download all files."
+        } else {
+            $SelectedId = "A"
+        }
         $ToDownload = @()
         if ($SelectedId -like "A") {
             foreach ($Link in $Links.Matches) {
