@@ -23,7 +23,8 @@ function Save-MSCatalogUpdate {
         If using a Windows system you can use this parameter to download the update using BITS.
 
         .PARAMETER AcceptMultiFileUpdates
-        Allow for multiple file update downloads to occur without user interaction
+        If specified, updates containing multiple files will not prompt the user to select which
+        file to download. Instead all files will be downloaded.
 
         .EXAMPLE
         $Update = Get-MSCatalogUpdate -Search "KB4515384"
@@ -130,10 +131,10 @@ function Save-MSCatalogUpdate {
                 Write-Host "$Id  $FileName`r"
             }
         }
-        if($AcceptMultiFileUpdates -eq $false){
-            $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download or 'A' to download all files."
-        } else {
+        if ($AcceptMultiFileUpdates) {
             $SelectedId = "A"
+        } else {
+            $SelectedId = Read-Host "Multiple files exist for this update. Enter the Id of the file to download or 'A' to download all files."
         }
         $ToDownload = @()
         if ($SelectedId -like "A") {
