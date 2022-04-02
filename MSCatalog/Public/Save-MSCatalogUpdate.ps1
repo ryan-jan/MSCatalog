@@ -101,18 +101,22 @@ function Save-MSCatalogUpdate {
         $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
         if ($UseBits) {
             Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
-        } else {
+        }
+        else {
             Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
         }
-    } elseif ($Language) {
-        $Link = $Links.Matches.Where({$_.Value -match $Language})[0]
+    }
+    elseif ($Language) {
+        $Link = $Links.Matches.Where({ $_.Value -match $Language })[0]
         $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
         if ($UseBits) {
             Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
-        } else {
+        }
+        else {
             Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
         }
-    } else {
+    }
+    elseif (($Links.Matches.Count -gt 1) -and (!($Language))) {
         Write-Host "Id  FileName`r"
         Write-Host "--  --------"
         foreach ($Link in $Links.Matches) {
@@ -120,7 +124,8 @@ function Save-MSCatalogUpdate {
             $FileName = $Link.Value.Split('/')[-1]
             if ($Id -lt 10) {
                 Write-Host " $Id  $FileName`r"
-            } else {
+            }
+            else {
                 Write-Host "$Id  $FileName`r"
             }
         }
@@ -130,7 +135,8 @@ function Save-MSCatalogUpdate {
             foreach ($Link in $Links.Matches) {
                 $ToDownload += $Link.Value
             }
-        } else {
+        }
+        else {
             $ToDownload += $Links.Matches[$SelectedId].Value
         }
 
@@ -138,9 +144,13 @@ function Save-MSCatalogUpdate {
             $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Item.Split('/')[-1]
             if ($UseBits) {
                 Invoke-DownloadFile -Uri $Item -Path $OutFile -UseBits
-            } else {
+            }
+            else {
                 Invoke-DownloadFile -Uri $Item -Path $OutFile
             }
         }
+    }
+    else {
+        Write-Warning "Link for file on www.catalog.update.microsoft.com not found. Nothing can be downloaded"
     }
 }
