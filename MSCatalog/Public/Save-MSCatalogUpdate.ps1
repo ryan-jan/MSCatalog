@@ -105,12 +105,15 @@ function Save-MSCatalogUpdate {
             Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
         }
     } elseif ($Language) {
-        $Link = $Links.Matches.Where({$_.Value -match $Language})[0]
-        $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
-        if ($UseBits) {
-            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
-        } else {
-            Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+        $Links = $Links.Matches.Where({$_.Value -match $Language})
+        foreach ($Link in $Links)
+        {
+            $OutFile = Join-Path -Path (Get-Item -Path $Destination) -ChildPath $Link.Value.Split('/')[-1]
+            if ($UseBits) {
+                Invoke-DownloadFile -Uri $Link.Value -Path $OutFile -UseBits
+            } else {
+                Invoke-DownloadFile -Uri $Link.Value -Path $OutFile
+            }
         }
     } else {
         Write-Host "Id  FileName`r"
