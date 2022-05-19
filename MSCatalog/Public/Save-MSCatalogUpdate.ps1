@@ -12,7 +12,7 @@ function Save-MSCatalogUpdate {
         The Guid is retrieved using the Get-MSCatalogUpdate function.
 
         .PARAMETER Destination
-        Specify the destination directory to download the update to.
+        Specify the destination directory to download the update to. If left unset, update will be downloaded to the default temporary directory.
 
         .PARAMETER Language
         Some updates are available in multiple languages. By default this function will list all available
@@ -59,12 +59,12 @@ function Save-MSCatalogUpdate {
         [String] $Guid,
 
         [Parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             Position = 1,
             ParameterSetName = "ByObject"
         )]
         [Parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             Position = 1,
             ParameterSetName = "ByGuid"
         )]
@@ -97,6 +97,10 @@ function Save-MSCatalogUpdate {
         [Parameter(Mandatory = $false)]
         [switch] $AcceptMultiFileUpdates
     )
+
+    if ($null -eq $Destination) {
+        $Destination = $env:TEMP
+    }
 
     if ($Update) {
         $Guid = $Update.Guid
