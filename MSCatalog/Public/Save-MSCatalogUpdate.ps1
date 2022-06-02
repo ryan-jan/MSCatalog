@@ -98,7 +98,7 @@ function Save-MSCatalogUpdate {
         [switch] $AcceptMultiFileUpdates
     )
 
-    if ($null -eq $Destination) {
+    if (-not $Destination) {
         $Destination = $env:TEMP
     }
 
