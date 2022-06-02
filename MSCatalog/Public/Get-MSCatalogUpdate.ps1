@@ -24,6 +24,9 @@ function Get-MSCatalogUpdate {
         This option will cause an extra web request for each update included in the results. It is best to only
         use this option with a very narrow search term.
 
+        .PARAMETER ExcludePreview
+        Exclude preview updates from the search results.
+
         .PARAMETER AllPages
         By default the Get-MSCatalogUpdate command returns the first page of results from catalog.update.micrsosoft.com, which is
         limited to 25 updates. If you specify this switch the command will instead return all pages of search results.
@@ -62,6 +65,9 @@ function Get-MSCatalogUpdate {
 
         [Parameter(Mandatory = $false)]
         [switch] $IncludeFileNames,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $ExcludePreview,
 
         [Parameter(Mandatory = $false)]
         [switch] $AllPages
@@ -142,6 +148,12 @@ function Get-MSCatalogUpdate {
                     $_.SelectNodes("td")[1].innerText.Trim() -like "*$Search*"
                 })
             }
+        }
+
+        if ($ExcludePreview) {
+            $Rows = $Rows.Where({
+                $_.SelectNodes("td")[1].innerText.Trim() -notlike "*Preview*"
+            })
         }
         
         if ($Rows.Count -gt 0) {
