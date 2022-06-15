@@ -8,7 +8,7 @@ class MSCatalogResponse {
 
     MSCatalogResponse($HtmlDoc) {
         $Table = $HtmlDoc.GetElementbyId("ctl00_catalogBody_updateMatches")
-        $this.Rows = $Table.SelectNodes("tr")
+        $this.Rows = $Table.SelectNodes("tr") | Where-Object { $_.id -ne "headerRow" }
         $this.EventArgument = $HtmlDoc.GetElementbyId("__EVENTARGUMENT")[0].Attributes["value"].Value
         $this.EventValidation = $HtmlDoc.GetElementbyId("__EVENTVALIDATION")[0].Attributes["value"].Value
         $this.ViewState = $HtmlDoc.GetElementbyId("__VIEWSTATE")[0].Attributes["value"].Value
