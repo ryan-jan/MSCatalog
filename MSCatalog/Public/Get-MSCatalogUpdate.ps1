@@ -150,11 +150,7 @@ function Get-MSCatalogUpdate {
             }
         }
 
-        if ($ExcludePreview) {
-            $Rows = $Rows.Where({
-                $_.SelectNodes("td")[1].innerText.Trim() -notlike "*Preview*"
-            })
-        }
+        if ($ExcludePreview) { $Rows = $Rows | Where-Object { $_.SelectNodes("td")[1].InnerText.Trim() -notlike "*Preview*" } }
         
         if ($Rows.Count -gt 0) {
             foreach ($Row in $Rows) {
