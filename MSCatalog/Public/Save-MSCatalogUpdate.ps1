@@ -1,7 +1,7 @@
 function Save-MSCatalogUpdate {
     <#
         .SYNOPSIS
-        Download an update file from catalog.update.micrsosoft.com.
+        Download an update file from catalog.update.microsoft.com.
 
         .PARAMETER Update
         Specify the update to be downloaded.
@@ -40,8 +40,11 @@ function Save-MSCatalogUpdate {
         .EXAMPLE
         $Update = Get-MSCatalogUpdate -Search "KB4515384"
         Save-MSCatalogUpdate -Update $Update -Destination C:\Windows\Temp\ -UseBits
+				
+		.LINK
+		https://github.com/ryan-jan/MSCatalog
     #>
-    
+    [CmdLetBinding()]
     param (
         [Parameter(
             Mandatory = $true,
@@ -66,9 +69,10 @@ function Save-MSCatalogUpdate {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            ParameterSetName = "ByGuid"
+            ParameterSetName = "ByGuid",
+			HelpMessage="Defaults to %temp%"
         )]
-        [String] $Destination,
+        [String] $Destination = $env:TEMP,
 
         [Parameter(
             Mandatory = $false,
@@ -98,9 +102,9 @@ function Save-MSCatalogUpdate {
         [switch] $AcceptMultiFileUpdates
     )
 
-    if (-not $Destination) {
-        $Destination = $env:TEMP
-    }
+#    if (-not $Destination) {
+#        $Destination = $env:TEMP
+#    }
 
     if ($Update) {
         $Guid = $Update.Guid
