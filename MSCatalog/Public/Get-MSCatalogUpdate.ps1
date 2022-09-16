@@ -60,11 +60,11 @@ function Get-MSCatalogUpdate {
         [string] $Search,
 
 
-        [Parameter(Mandatory = $false, HelpMessage="Default is sort by LastUpdated")]
+        [Parameter(Mandatory = $false)]
         [ValidateSet("Title", "Products", "Classification", "LastUpdated", "Size")]
         [string] $SortBy = "LastUpdated",
 
-        [Parameter(Mandatory = $false, HelpMessage="Default is descending order.")]
+        [Parameter(Mandatory = $false)]
         [switch] $Descending = $true,
 
         [Parameter(Mandatory = $false)]
