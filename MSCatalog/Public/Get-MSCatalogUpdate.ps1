@@ -46,6 +46,12 @@ function Get-MSCatalogUpdate {
 
         .EXAMPLE
         Get-MSCatalogUpdate -Search "Cumulative for Windows Server, version 1903" -AllPages
+		
+		.EXAMPLE
+		Get-MSCatalogUpdate -Search "Microsoft Edge-Stable Channel x64"
+		
+		.LINK
+		https://github.com/ryan-jan/MSCatalog
     #>
     
     [CmdLetBinding()]
@@ -53,12 +59,13 @@ function Get-MSCatalogUpdate {
         [Parameter(Mandatory = $true)]
         [string] $Search,
 
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("Title", "Products", "Classification", "LastUpdated", "Size")]
-        [string] $SortBy,
 
         [Parameter(Mandatory = $false)]
-        [switch] $Descending,
+        [ValidateSet("Title", "Products", "Classification", "LastUpdated", "Size")]
+        [string] $SortBy = "LastUpdated",
+
+        [Parameter(Mandatory = $false)]
+        [switch] $Descending = $true,
 
         [Parameter(Mandatory = $false)]
         [switch] $Strict,
@@ -80,18 +87,18 @@ function Get-MSCatalogUpdate {
         $Uri = "https://www.catalog.update.microsoft.com/Search.aspx?q=$([uri]::EscapeDataString($Search))"
         $Res = Invoke-CatalogRequest -Uri $Uri
 
-        if ($PSBoundParameters.ContainsKey("SortBy")) {
-            $SortParams = @{
-                Uri = $Uri
-                SortBy = $SortBy
-                Descending = $Descending
-                EventArgument = $Res.EventArgument
-                EventValidation = $Res.EventValidation
-                ViewState = $Res.ViewState
-                ViewStateGenerator = $Res.ViewStateGenerator
-            }
-            $Res = Sort-CatalogResults @SortParams
-        } else {
+#        if ($PSBoundParameters.ContainsKey("SortBy")) {
+#            $SortParams = @{
+#                Uri = $Uri
+#                SortBy = $SortBy
+#                Descending = $Descending
+#                EventArgument = $Res.EventArgument
+#                EventValidation = $Res.EventValidation
+#                ViewState = $Res.ViewState
+#                ViewStateGenerator = $Res.ViewStateGenerator
+#            }
+#            $Res = Sort-CatalogResults @SortParams
+#        } else {
             # Default sort is by LastUpdated and in descending order.
             $SortParams = @{
                 Uri = $Uri
@@ -103,7 +110,7 @@ function Get-MSCatalogUpdate {
                 ViewStateGenerator = $Res.ViewStateGenerator
             }
             $Res = Sort-CatalogResults @SortParams
-        }
+#        }
 
         $Rows = $Res.Rows
 
