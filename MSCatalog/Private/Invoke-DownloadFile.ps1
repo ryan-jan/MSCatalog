@@ -7,10 +7,10 @@ function Invoke-DownloadFile {
     )
     
     try {
-        # Check to see if file is already downloaded and the hash matches, if it does, we do not need to re-download
+        # Check to see if file is already downloaded and the signature is valid, if it is, we do not need to re-download
         if (Test-Path $Path) {
-            $Hash = Get-FileHash -Path $Path -Algorithm SHA1
-            if ($Path -match "$($Hash.Hash)\.msu$") {
+            $Signature = (Get-AuthenticodeSignature $Path).Status
+            if ($Signature -eq "Valid") {
                 return
             }
         }
@@ -25,8 +25,8 @@ function Invoke-DownloadFile {
             $WebClient.Dispose()
         }
 
-        $Hash = Get-FileHash -Path $Path -Algorithm SHA1
-        if ($Path -notmatch "$($Hash.Hash)\.msu$") {
+        $Signature = (Get-AuthenticodeSignature $Path).Status
+        if ($Signature -ne "Valid") {
             throw "The hash of the downloaded file does not match the expected value."
         }
 
