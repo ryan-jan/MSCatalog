@@ -27,7 +27,7 @@ function Invoke-DownloadFile {
 
         $Signature = (Get-AuthenticodeSignature $Path).Status
         if ($Signature -ne "Valid") {
-            throw "The hash of the downloaded file does not match the expected value."
+            throw "The signature of the downloaded file could not be validated."
         }
 
         Set-TempSecurityProtocol -ResetToDefault
