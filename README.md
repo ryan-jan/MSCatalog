@@ -1,5 +1,8 @@
 # MSCatalog
 
+> [!warning]
+> This repository is no longer maintained and has been archived. Please refer to [Marco-online/MSCatalogLTS](https://github.com/Marco-online/MSCatalogLTS) for an actively maintained alternative.
+
 MSCatalog is a PowerShell module for searching and downloading updates from https://www.catalog.update.microsoft.com.
 It is cross-platform and runs on both Desktop and Core versions of PowerShell.
 
